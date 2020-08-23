@@ -1,7 +1,6 @@
 import json
 import os
 import urllib.request
-
 import requests
 
 # Directories
