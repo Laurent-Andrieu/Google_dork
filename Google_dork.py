@@ -112,7 +112,7 @@ class SearchApi:
         if not is_book:
             self.query = f'filetype:{filetype}%20{topic}'
         else:
-            self.query = f'book:{topic}%20filetype%20{filetype}'
+            self.query = f'book:{topic}%20filetype:{filetype}'
 
         # Compteur de requêtes
         c = int((quantity + 9) / 10)
