@@ -112,7 +112,7 @@ class SearchApi:
         if not is_book:
             self.query = f'filetype:{filetype}%20{topic}'
         else:
-            self.query = f'book:{topic} filetype: {filetype}'
+            self.query = f'book:{topic}%20filetype%20{filetype}'
 
         # Compteur de requêtes
         c = int((quantity + 9) / 10)
@@ -183,7 +183,7 @@ def main():
     web = SearchApi(ENGINE_ID, API_KEY)
     files = web.search('python', 'pdf', 2, 'FR')
     href = [files[c] for i, c in enumerate(files)]
-    # download(href)
+    download(href)
 
 
 if __name__ == '__main__':
