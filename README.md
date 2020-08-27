@@ -21,8 +21,11 @@ Enfin entrez `git clone https://github.com/Laurent-Andrieu/Google_dork/` pour cl
 ### Python packages
 * [Python Version 3.8](https://www.python.org/downloads/release/python-382/)
 * json
+* optparse
 * os
-* urllib
+* sys
+* urllib.error
+* urllib.request
 * [requests](https://pypi.org/project/requests/)
 
 ### API creditentials
@@ -39,21 +42,21 @@ Générer une clé API limitée:
 ## Utilisation
 
   Appelez le script avec les paramètres:
-  ```bash
+  ```console
   Google_dork.py -t ANYTHING -e pdf -q 10 -c FR -k APIKEY -i ENGINEID
   ```
   Pour télécharger dans un dossier souhaité:
-  ```bash
+  ```console
   Google_dork.py [paramètres] -f PATH
   ```
   Pour sélectionner uniquement les livres en ligne:
-  ```bash
+  ```console
   Google_dork.py [paramètres] -b
   ```
   
   **Optionnellement**
   
   Modifiez le [sous fichier](https://github.com/Laurent-Andrieu/Google_dork/blob/master/Google_dork.py#L142) de téléchargement des fichiers:
-  ```Python {.line-numbers}
+  ```Python
   DIR = DEST_PATH + 'Documents'
   ```
