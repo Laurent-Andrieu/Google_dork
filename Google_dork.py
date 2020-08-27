@@ -114,6 +114,10 @@ class SearchApi:
         self.results = {}
         self.json = {}
         self.path = path
+        if os.name == 'nt':
+            self.path = self.path.replace('\\', '/')
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
 
     def log(self, title: str, link: str):
         """
@@ -125,17 +129,17 @@ class SearchApi:
         self.results[title] = link
 
         # Vérification ficher log
-        if 'log.json' not in os.listdir(PATH):
-            open(f'{PATH}/log.json', 'a+').close()
+        if 'log.json' not in os.listdir(self.path):
+            open(f'{self.path}/log.json', 'a+').close()
         else:
             pass
 
-        if not os.stat('log.json').st_size == 0:
-            with open('log.json', 'w') as docs:
+        if not os.stat(f'{self.path}/log.json').st_size == 0:
+            with open(f'{self.path}/log.json', 'w') as docs:
                 json.dump(self.results, docs)
                 docs.close()
         else:
-            with open('log.json', 'a') as docs:
+            with open(f'{self.path}/log.json', 'a') as docs:
                 json.dump(self.results, docs)
                 docs.close()
 
