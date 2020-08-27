@@ -57,9 +57,8 @@ Modifiez les [identifiants de l'API](https://github.com/Laurent-Andrieu/Google_d
   ```Python
   def main():
     web = SearchApi(ENGINE_ID, API_KEY)
-    files = web.search('python', ['pdf', 'txt'], 12) # mot-clés, extensions, nombre de hits
-    href = [files[c] for i, c in enumerate(files)]
-    download(href)
+    web.search('python', 'pdf', 10, 'FR')
+    web.download()
   ```
   
   **Optionnellement**
