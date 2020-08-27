@@ -6,7 +6,7 @@ import urllib.error
 import urllib.request
 import requests
 
-PATH = os.path.dirname(sys.argv[0])
+PATH = os.getcwd()
 # Ajustement chemin d'accès
 if os.name == 'nt':
     PATH = PATH.replace('\\', '/')
@@ -124,12 +124,19 @@ class SearchApi:
         :return: Void.
         """
         self.results[title] = link
-        if not os.stat('result.json').st_size == 0:
-            with open('result.json', 'w') as docs:
+
+        # Vérification ficher log
+        if 'log.json' not in os.listdir(PATH):
+            open('log.json', 'a+').close()
+        else:
+            pass
+
+        if not os.stat('log.json').st_size == 0:
+            with open('log.json', 'w') as docs:
                 json.dump(self.results, docs)
                 docs.close()
         else:
-            with open('result.json', 'a') as docs:
+            with open('log.json', 'a') as docs:
                 json.dump(self.results, docs)
                 docs.close()
 
@@ -181,7 +188,7 @@ class SearchApi:
                 raise Exception(data['error']['message'])
 
     def download(self):
-        # Vérification ficher dump
+        # Vérification dossier dump
         if not os.path.isdir(DIR):
             os.mkdir(DIR)
         else:
@@ -190,9 +197,9 @@ class SearchApi:
         # Comparaison contenu fichier / contenu du dossier
         result_file = Listfiles(PATH, ext='json').files
         result_doc = Listfiles(DIR, ext='pdf').files
-        if 'result.json' in result_file:
+        if 'log.json' in result_file:
             try:
-                with open('result.json', 'r') as source:
+                with open('log.json', 'r') as source:
                     self.json = json.load(source)
                     source.close()
             except json.JSONDecodeError:
