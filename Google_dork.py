@@ -153,12 +153,9 @@ class SearchApi:
         :param is_book: Recherche de livres uniquements.
         :return: Dictionnaire des résultats, titre: URL.
         """
-        if not all(isinstance(s, str) for s in filetype):
-            raise Exception(f'Extension type Error: {self.ext} should be a str list')
-
-        # Extensions multiples
-        if isinstance(filetype, list):
-            filetype = '|'.join(i for i in filetype)
+        self.ext = filetype
+        if not isinstance(filetype, str):
+            raise Exception(f'Extension type Error: {filetype} should be a str ')
 
         # Précision de la recherche
         if not is_book:
@@ -241,7 +238,7 @@ class SearchApi:
             try:
                 fs.split('.')
             except ValueError:
-                os.replace(DIR+fs, DIR+fs+'.pdf')
+                os.replace(DIR+fs, DIR+fs+f'.{self.ext}')
 
 
 def main():
