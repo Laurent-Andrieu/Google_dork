@@ -16,7 +16,7 @@ def arg():
 
     La fonction arg retourne les arguments lors de l'appel du script.
     """
-    parser = optparse.OptionParser(usage='utilisation: %prog [options] [-t] [-e] [-c] [-a] [-i]', version='%prog v1.0')
+    parser = optparse.OptionParser(usage='%prog [options] [-t] [-e] [-c] [-a] [-i]', version='%prog v1.0')
 
     # Main parameters
     parser.add_option('-t', '--topic', dest='topic', help='Sujet à rechercher', type=str)
