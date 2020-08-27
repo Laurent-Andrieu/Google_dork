@@ -12,7 +12,7 @@ Script python permettant l'utilisation de la syntaxe des 'Google dorks' via l'AP
 ### Linux 
 * Entrer `sudo apt install git` dans le terminal.
 
-Enfin entrez `git clone https://github.com/Laurent-Andrieu/Spotify-Lyrics/` pour cloner le repository.
+Enfin entrez `git clone https://github.com/Laurent-Andrieu/Google_dork/` pour cloner le repository.
 
 ---
 
