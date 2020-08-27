@@ -1,7 +1,6 @@
 import json
 import optparse
 import os
-import sys
 import urllib.error
 import urllib.request
 import requests
@@ -10,7 +9,6 @@ PATH = os.getcwd()
 # Ajustement chemin d'accès
 if os.name == 'nt':
     PATH = PATH.replace('\\', '/')
-DIR = PATH + '/Documents/'
 
 
 def arg():
@@ -101,20 +99,21 @@ class SearchApi:
     La méthode 'download' permet de télécharger les fichiers trouvés non déjà téléchargés.
     """
 
-    def __init__(self, engine_id: str, api_key: str):
+    def __init__(self, engine_id: str, api_key: str, path: str):
         """
 
-        :param engine_id: id généré via 'programmablesearchengine''
-        :param api_key: clé génréré via 'Custom Search JSON API''
+        :param engine_id: ID généré via 'programmablesearchengine''
+        :param api_key: Clé génréré via 'Custom Search JSON API''
+        :param path: Chemin d'accès
         """
         self.engine_id = engine_id
         self.api_key = api_key
-        self.subject = None
         self.query = None
         self.URL = f''
         self.ext = None
         self.results = {}
         self.json = {}
+        self.path = path
 
     def log(self, title: str, link: str):
         """
@@ -127,7 +126,7 @@ class SearchApi:
 
         # Vérification ficher log
         if 'log.json' not in os.listdir(PATH):
-            open('log.json', 'a+').close()
+            open(f'{PATH}/log.json', 'a+').close()
         else:
             pass
 
@@ -188,6 +187,7 @@ class SearchApi:
                 raise Exception(data['error']['message'])
 
     def download(self):
+        DIR = self.path + '/Documents/'
         # Vérification dossier dump
         if not os.path.isdir(DIR):
             os.mkdir(DIR)
@@ -234,7 +234,7 @@ class SearchApi:
 
 def main():
     args = arg()
-    web = SearchApi(args.id, args.key)
+    web = SearchApi(args.id, args.key, args.folder)
     web.search(args.topic, args.ext, args.quantity, args.country, args.book)
     web.download()
 
