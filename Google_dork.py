@@ -1,8 +1,7 @@
 import json
 import os
-import urllib.request
+import urllib.request, urllib.error
 import requests
-
 
 # Directories
 USER = os.getlogin()
@@ -72,8 +71,9 @@ class SearchApi:
         self.URL = f''
         self.ext = None
         self.results = {}
+        self.json = {}
 
-    def __add__(self, title: str, link: str):
+    def log(self, title: str, link: str):
         """
 
         :param title: Titre contenu de la recherche.
@@ -106,7 +106,6 @@ class SearchApi:
         # Extensions multiples
         if isinstance(filetype, list):
             filetype = '|'.join(i for i in filetype)
-            print(filetype)
 
         # Précision de la recherche
         if not is_book:
@@ -129,61 +128,60 @@ class SearchApi:
             # GET REQUEST API
             data = requests.get(self.URL).json()
             items = data.get('items')
-            try:
-                if items:
-                    for item, content in enumerate(items):
-                        title = content.get("title")
-                        snippet = content.get("snippet")
-                        link = content.get("link")
-                        self.__add__(title, link)
-                    return self.results
-                else:
-                    raise Exception(data['error']['message'])
-            except TypeError:
+            if items:
+                for item, content in enumerate(items):
+                    title = content.get("title")
+                    link = content.get("link")
+                    self.results[title] = link
+                return self.results
+            else:
                 raise Exception(data['error']['message'])
 
+    def download(self):
+        # Vérification ficher dump
+        DIR = DEST_PATH + 'Documents'
+        if not os.path.isdir(DIR):
+            os.mkdir(DIR)
+        else:
+            pass
 
-def download(href: [str, list]):
-    if not all(isinstance(s, str) for s in href):
-        raise Exception(f'Href type Error: {href} should be a str list')
+        # Comparaison contenu fichier / contenu du dossier
+        result_file = Listfiles(DEST_PATH, ext='json').files
+        result_dir = Listfiles(DIR, ext='pdf').files
+        if 'result.json' in result_file:
+            try:
+                with open('result.json', 'r') as source:
+                    self.json = json.load(source)
+                    source.close()
+            except json.JSONDecodeError:
+                pass
 
-    # Comparaison contenu fichier / contenu du dossier
-    # TODO: DL non téléchargés
-    result_file = Listfiles(DEST_PATH, ext='json')
-    if 'result.json' in result_file.files:
-        try:
-            with open('result.json', 'r') as source:
-                s = json.load(source)
-                source.close()
-        finally:
-            print(s)
-
-    # Vérification ficher dump
-    DIR = DEST_PATH + 'Documents'
-    if not os.path.isdir(DIR):
-        os.mkdir(DIR)
-    else:
-        pass
-
-    # Téléchargement des fichiers
-    counter = 0
-    if isinstance(href, list):
-        for href_ in href:
+        # Téléchargement des fichiers
+        counter = 0
+        error = 0
+        error_urls = []
+        for title, href_ in self.results.items():
             doc_name = href_.split('/')[-1]
-            data = urllib.request.urlretrieve(href_, DIR + f'/{doc_name}')
-            counter += 1
-    else:
-        doc_name = href.split('/')[-1]
-        urllib.request.urlretrieve(href, DIR + f'/{doc_name}')
-        counter += 1
-    print(f' [ {counter} ] fichiér(s) téléchargés dans {DIR}')
+            try:
+                if not href_ in self.json.values() or not doc_name in result_dir:
+                    print(f'Téléchargement de: {doc_name}...\n\t{href_}')
+                    urllib.request.urlretrieve(href_, DIR + f'/{doc_name}')
+                    self.log(title, href_)
+                    counter += 1
+                else:
+                    print(f'Précedement téléchargé: {doc_name}')
+            except urllib.error.URLError:
+                error += 1
+                error_urls.append('\t'+href_)
+        print(f'Taux d\'erreur: {error/counter}:') if counter else print(f'Erreur(s): {error}')
+        print(*error_urls, sep='\n') if len(error_urls) != 0 else print()
+        print(f'[ {counter} ] fichiér(s) téléchargés dans {DIR}')
 
 
 def main():
     web = SearchApi(ENGINE_ID, API_KEY)
-    files = web.search('python', 'pdf', 2, 'FR')
-    href = [files[c] for i, c in enumerate(files)]
-    download(href)
+    web.search('python', 'pdf', 10, 'FR')
+    web.download()
 
 
 if __name__ == '__main__':
