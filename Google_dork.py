@@ -92,7 +92,7 @@ class Listfiles:
 class SearchApi:
     """
 
-    Cette class permet d'utiliser l'API 'Programmable Search Engine' de Google.
+    Cette classe permet d'utiliser l'API 'Programmable Search Engine' de Google.
 
     La méthode 'search' renvoie un dictionnaire des résultats trouvés sous la forme d'un titre: URL.
     La fonction 'log' permet de conserver et mettre à jour les nouveaux fichiers trouvés par la recherche.
