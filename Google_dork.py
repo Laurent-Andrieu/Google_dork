@@ -1,15 +1,57 @@
 import json
+import optparse
 import os
-import urllib.request, urllib.error
+import sys
+import urllib.error
+import urllib.request
 import requests
 
-# Directories
-USER = os.getlogin()
-PATH = f'C:/Users/{USER}/Downloads/'
-DEST_PATH = f'C:/Users/{USER}/PycharmProjects/Google_dork/'
-# API
-ENGINE_ID = ''
-API_KEY = ''
+PATH = os.path.dirname(sys.argv[0])
+# Ajustement chemin d'accès
+if os.name == 'nt':
+    PATH = PATH.replace('\\', '/')
+DIR = PATH + '/Documents/'
+
+
+def arg():
+    """
+
+    La fonction arg retourne les arguments lors de l'appel du script.
+    """
+    parser = optparse.OptionParser(usage='utilisation: %prog [options] [-t] [-e] [-c] [-a] [-i]', version='%prog v1.0')
+
+    # Main parameters
+    parser.add_option('-t', '--topic', dest='topic', help='Sujet à rechercher', type=str)
+    parser.add_option('-e', '--extension', dest='ext', help='Nom des extensions souhaités', type=str)
+    parser.add_option('-q', '--quantity', dest='quantity', help='Quantité de fichiers', type=int)
+    parser.add_option('-c', '--country', dest='country', help='Country Code XX', type=str)
+
+    # Options
+    group = optparse.OptionGroup(parser, 'More options')
+    group.add_option('-b', '--books', dest='book', help='Rechercher des livres uniquements', action='store_true',
+                     default=False)
+    group.add_option('-f', '--folder', dest='folder', type="str",
+                     help="Chemin d'accès du dossier où stocker les fichiers téléchargés", default=PATH)
+    parser.add_option_group(group)
+
+    # API credentials parameters
+    group = optparse.OptionGroup(parser, 'Api creditentials')
+    group.add_option('-k', '--api_key', dest='key', help="Clé de l'API Google CSE", type=str)
+    group.add_option('-i', '--id', dest='id', help="ID de l'API Google CSE", type=str)
+    parser.add_option_group(group)
+
+    (options, args) = parser.parse_args()
+
+    # Options nécessaires
+    missing = []
+    for k, v in vars(options).items():
+        if k != 'book' or 'folder':
+            if v is None:
+                missing.append(k)
+    if len(missing) != 0:
+        parser.error(f'Missing values for {missing}')
+    else:
+        return options
 
 
 class Listfiles:
@@ -55,7 +97,8 @@ class SearchApi:
     Cette class permet d'utiliser l'API 'Programmable Search Engine' de Google.
 
     La méthode 'search' renvoie un dictionnaire des résultats trouvés sous la forme d'un titre: URL.
-    La fonction '__add__' permet de conserver et mettre à jour les nouveaux fichiers trouvés par la recherche.
+    La fonction 'log' permet de conserver et mettre à jour les nouveaux fichiers trouvés par la recherche.
+    La méthode 'download' permet de télécharger les fichiers trouvés non déjà téléchargés.
     """
 
     def __init__(self, engine_id: str, api_key: str):
@@ -90,7 +133,7 @@ class SearchApi:
                 json.dump(self.results, docs)
                 docs.close()
 
-    def search(self, topic: str, filetype: [str, list], quantity: int, country: str, is_book=True):
+    def search(self, topic: str, filetype: [str, list], quantity: int, country: str, is_book=False):
         """
 
         :param topic: Mot clé de la recherche.
@@ -139,15 +182,14 @@ class SearchApi:
 
     def download(self):
         # Vérification ficher dump
-        DIR = DEST_PATH + 'Documents'
         if not os.path.isdir(DIR):
             os.mkdir(DIR)
         else:
             pass
 
         # Comparaison contenu fichier / contenu du dossier
-        result_file = Listfiles(DEST_PATH, ext='json').files
-        result_dir = Listfiles(DIR, ext='pdf').files
+        result_file = Listfiles(PATH, ext='json').files
+        result_doc = Listfiles(DIR, ext='pdf').files
         if 'result.json' in result_file:
             try:
                 with open('result.json', 'r') as source:
@@ -160,27 +202,33 @@ class SearchApi:
         counter = 0
         error = 0
         error_urls = []
+        # Url correction
+        remove_list = "?><\/:\"*|"
         for title, href_ in self.results.items():
             doc_name = href_.split('/')[-1]
+            for char in remove_list:
+                if char in doc_name:
+                    doc_name = doc_name.replace(char, "")
             try:
-                if not href_ in self.json.values() or not doc_name in result_dir:
+                if href_ not in self.json.values() and doc_name not in result_doc:
                     print(f'Téléchargement de: {doc_name}...\n\t{href_}')
-                    urllib.request.urlretrieve(href_, DIR + f'/{doc_name}')
+                    urllib.request.urlretrieve(href_, DIR + doc_name)
                     self.log(title, href_)
                     counter += 1
                 else:
                     print(f'Précedement téléchargé: {doc_name}')
             except urllib.error.URLError:
                 error += 1
-                error_urls.append('\t'+href_)
-        print(f'Taux d\'erreur: {error/counter}:') if counter else print(f'Erreur(s): {error}')
+                error_urls.append('\t' + href_)
+        print(f"Taux d'erreur: {error / counter}:") if counter else print(f'Erreur(s): {error}')
         print(*error_urls, sep='\n') if len(error_urls) != 0 else print()
         print(f'[ {counter} ] fichiér(s) téléchargés dans {DIR}')
 
 
 def main():
-    web = SearchApi(ENGINE_ID, API_KEY)
-    web.search('python', 'pdf', 10, 'FR')
+    args = arg()
+    web = SearchApi(args.id, args.key)
+    web.search(args.topic, args.ext, args.quantity, args.country, args.book)
     web.download()
 
 
