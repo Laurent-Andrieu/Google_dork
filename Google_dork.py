@@ -231,9 +231,17 @@ class SearchApi:
             except urllib.error.URLError:
                 error += 1
                 error_urls.append('\t' + href_)
-        print(f"Taux d'erreur: {error / counter}:") if counter else print(f'Erreur(s): {error}')
+        print(f'Erreur(s): {error}')
         print(*error_urls, sep='\n') if len(error_urls) != 0 else print()
         print(f'[ {counter} ] fichiér(s) téléchargés dans {DIR}')
+
+        # Vérification extension des fichiers
+        dl_files = os.listdir(DIR)
+        for k, fs in enumerate(dl_files):
+            try:
+                fs.split('.')
+            except ValueError:
+                os.replace(DIR+fs, DIR+fs+'.pdf')
 
 
 def main():
