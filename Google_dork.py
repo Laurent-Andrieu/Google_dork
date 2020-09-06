@@ -59,7 +59,7 @@ class Listfiles:
     et de conserver leurs noms dans un objet.
     """
 
-    def __init__(self, path: str, ext: [str, list]):
+    def __init__(self, path: str, ext: str):
         """
 
         :param path: chemin d'accès à vérifier.
